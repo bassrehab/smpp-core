@@ -224,6 +224,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.version}</version>
                     <configuration>
+                        <release>${java.version}</release>
                         <additionalOptions>--enable-preview</additionalOptions>
                     </configuration>
                     <executions>
