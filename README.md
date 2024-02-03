@@ -78,6 +78,13 @@ SubmitSmResp response = session.send(submitSm, Duration.ofSeconds(10));
 mvn clean install
 ```
 
+## Author
+
+**Subhadip Mitra**
+- Email: contact@subhadipmitra.com
+- Website: [subhadipmitra.com](https://subhadipmitra.com)
+- GitHub: [@bassrehab](https://github.com/bassrehab)
+
 ## License
 
 Apache License 2.0

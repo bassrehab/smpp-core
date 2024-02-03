@@ -21,6 +21,22 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <id>bassrehab</id>
+            <name>Subhadip Mitra</name>
+            <email>contact@subhadipmitra.com</email>
+            <url>https://subhadipmitra.com</url>
+            <organization>smppgateway.io</organization>
+            <organizationUrl>https://smppgateway.io</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>America/New_York</timezone>
+        </developer>
+    </developers>
+
     <scm>
         <url>https://github.com/bassrehab/smpp-core</url>
         <connection>scm:git:git://github.com/bassrehab/smpp-core.git</connection>
