@@ -1,5 +1,11 @@
 # SMPP Core
 
+[![Build Status](https://github.com/bassrehab/smpp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/bassrehab/smpp-core/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.smppgateway/smpp-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:io.smppgateway%20AND%20a:smpp-core)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org/projects/jdk/21/)
+[![javadoc](https://javadoc.io/badge2/io.smppgateway/smpp-core/javadoc.svg)](https://javadoc.io/doc/io.smppgateway/smpp-core)
+
 Modern Java 21 implementation of the SMPP (Short Message Peer-to-Peer) protocol.
 
 ## Features
