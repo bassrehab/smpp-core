@@ -7,7 +7,7 @@
 [![javadoc](https://javadoc.io/badge2/io.smppgateway/smpp-core/javadoc.svg)](https://javadoc.io/doc/io.smppgateway/smpp-core)
 [![GitHub stars](https://img.shields.io/github/stars/bassrehab/smpp-core?style=flat&color=yellow)](https://github.com/bassrehab/smpp-core/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/bassrehab/smpp-core)](https://github.com/bassrehab/smpp-core/issues)
-[![Documentation](https://img.shields.io/badge/docs-smppgateway.io-blue)](https://smppgateway.io/smpp-core/1.0/index.html)
+[![Documentation](https://img.shields.io/badge/docs-smppgateway.io-blue)](https://docs.smppgateway.io/smpp-core/1.0/index.html)
 
 > **The modern replacement for Cloudhopper** - A clean-room Java 21 implementation of the SMPP protocol.
 
@@ -128,7 +128,7 @@ Apache License 2.0
 ## Links
 
 - [Website](https://smppgateway.io)
-- [Documentation](https://smppgateway.io/smpp-core/1.0/index.html)
+- [Documentation](https://docs.smppgateway.io/smpp-core/1.0/index.html)
 - [Benchmarks](https://smppgateway.io/benchmarks.html)
 - [Comparison with Cloudhopper](https://smppgateway.io/comparison.html)
 - [Maven Central](https://central.sonatype.com/artifact/io.smppgateway/smpp-core)
