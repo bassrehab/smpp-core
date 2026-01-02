@@ -127,7 +127,7 @@ public class SmppServerSession {
 
     // Bind management (called by server handler)
 
-    void setBound(SmppBindType bindType, String systemId, String password,
+    public void setBound(SmppBindType bindType, String systemId, String password,
                   String systemType, byte interfaceVersion) {
         this.bindType = bindType;
         this.systemId = systemId;
@@ -141,7 +141,7 @@ public class SmppServerSession {
         };
     }
 
-    void setUnbound() {
+    public void setUnbound() {
         this.state = SessionState.CLOSED;
     }
 
@@ -197,7 +197,7 @@ public class SmppServerSession {
      * Sends an outbind to request a bind from the client.
      */
     public ChannelFuture sendOutbind(String systemId, String password) {
-        Outbind outbind = new Outbind(nextSequenceNumber(), systemId, password);
+        Outbind outbind = new Outbind(nextSequenceNumber(), systemId, password, List.of());
         return channel.writeAndFlush(outbind);
     }
 
@@ -269,11 +269,11 @@ public class SmppServerSession {
         return errors.get();
     }
 
-    void incrementSubmitSmReceived() {
+    public void incrementSubmitSmReceived() {
         submitSmReceived.incrementAndGet();
     }
 
-    void incrementErrors() {
+    public void incrementErrors() {
         errors.incrementAndGet();
     }
 
