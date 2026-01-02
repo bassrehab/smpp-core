@@ -27,14 +27,14 @@ import java.util.concurrent.TimeoutException;
  * </ul>
  *
  * <p>Usage:
- * <pre>
+ * <pre>{@code
  * WindowHandler handler = new WindowHandler(512, Duration.ofSeconds(30), executor);
  * pipeline.addLast("window", handler);
  *
  * // Send request and wait for response
  * WindowFuture<SubmitSmResp> future = handler.sendRequest(submitSm, Duration.ofSeconds(10));
  * SubmitSmResp response = future.await(10, TimeUnit.SECONDS);
- * </pre>
+ * }</pre>
  */
 public class WindowHandler extends ChannelDuplexHandler {
 
