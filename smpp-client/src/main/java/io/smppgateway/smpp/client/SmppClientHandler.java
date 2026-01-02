@@ -14,7 +14,7 @@ import io.smppgateway.smpp.types.CommandStatus;
  * </ul>
  *
  * <p>Example:
- * <pre>
+ * <pre>{@code
  * public class MyHandler implements SmppClientHandler {
  *     @Override
  *     public DeliverSmResult handleDeliverSm(SmppClientSession session, DeliverSm deliverSm) {
@@ -23,7 +23,7 @@ import io.smppgateway.smpp.types.CommandStatus;
  *         return DeliverSmResult.success();
  *     }
  * }
- * </pre>
+ * }</pre>
  */
 public interface SmppClientHandler {
 

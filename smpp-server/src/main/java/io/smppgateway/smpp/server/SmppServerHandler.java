@@ -15,7 +15,7 @@ import io.smppgateway.smpp.types.CommandStatus;
  * </ul>
  *
  * <p>Example:
- * <pre>
+ * <pre>{@code
  * public class MyHandler implements SmppServerHandler {
  *     @Override
  *     public BindResult authenticate(SmppServerSession session, String systemId,
@@ -32,7 +32,7 @@ import io.smppgateway.smpp.types.CommandStatus;
  *         return SubmitSmResult.success(messageId);
  *     }
  * }
- * </pre>
+ * }</pre>
  *
  * <p>Handler methods are called on virtual threads (Java 21) for high concurrency.
  */
