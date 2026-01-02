@@ -342,7 +342,7 @@ public class SmppClientSession {
 
     // State management (called by handler)
 
-    void setBound(SmppBindType bindType, String serverSystemId) {
+    public void setBound(SmppBindType bindType, String serverSystemId) {
         this.bindType = bindType;
         this.serverSystemId = serverSystemId;
         this.state = switch (bindType) {
@@ -352,18 +352,18 @@ public class SmppClientSession {
         };
     }
 
-    void incrementDeliverSmReceived() {
+    public void incrementDeliverSmReceived() {
         deliverSmReceived.incrementAndGet();
     }
 
-    void incrementErrors() {
+    public void incrementErrors() {
         errors.incrementAndGet();
     }
 
     /**
      * Completes a pending request with its response.
      */
-    boolean completeRequest(int sequenceNumber, PduResponse response) {
+    public boolean completeRequest(int sequenceNumber, PduResponse response) {
         return window.complete(sequenceNumber, response);
     }
 
@@ -385,7 +385,7 @@ public class SmppClientSession {
 
     // Sequence number
 
-    int nextSequenceNumber() {
+    public int nextSequenceNumber() {
         return sequenceNumber.getAndUpdate(n -> (n >= 0x7FFFFFFF) ? 1 : n + 1);
     }
 

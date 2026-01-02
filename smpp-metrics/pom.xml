@@ -21,6 +21,10 @@
             <groupId>io.smppgateway</groupId>
             <artifactId>smpp-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.smppgateway</groupId>
+            <artifactId>smpp-server</artifactId>
+        </dependency>
 
         <!-- Micrometer -->
         <dependency>

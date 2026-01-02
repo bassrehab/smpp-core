@@ -71,14 +71,18 @@ public class SmppMeterBinder implements MeterBinder {
     public void bindTo(MeterRegistry registry) {
         // Session count
         Gauge.builder("smpp.server.sessions", serverSupplier,
-                server -> server != null ? server.getSessionCount() : 0)
+                supplier -> {
+                    SmppServer server = supplier.get();
+                    return server != null ? server.getSessionCount() : 0;
+                })
             .tags(tags)
             .description("Number of active SMPP sessions")
             .register(registry);
 
         // Bound sessions
         Gauge.builder("smpp.server.sessions.bound", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .filter(SmppServerSession::isBound)
@@ -90,14 +94,18 @@ public class SmppMeterBinder implements MeterBinder {
 
         // Server running status
         Gauge.builder("smpp.server.running", serverSupplier,
-                server -> server != null && server.isRunning() ? 1 : 0)
+                supplier -> {
+                    SmppServer server = supplier.get();
+                    return server != null && server.isRunning() ? 1 : 0;
+                })
             .tags(tags)
             .description("Server running status (1=running, 0=stopped)")
             .register(registry);
 
         // Transmitter sessions
         Gauge.builder("smpp.server.sessions.transmitter", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .filter(s -> s.getBindType() != null && s.canTransmit() && !s.canReceive())
@@ -109,7 +117,8 @@ public class SmppMeterBinder implements MeterBinder {
 
         // Receiver sessions
         Gauge.builder("smpp.server.sessions.receiver", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .filter(s -> s.getBindType() != null && s.canReceive() && !s.canTransmit())
@@ -121,7 +130,8 @@ public class SmppMeterBinder implements MeterBinder {
 
         // Transceiver sessions
         Gauge.builder("smpp.server.sessions.transceiver", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .filter(s -> s.getBindType() != null && s.canReceive() && s.canTransmit())
@@ -133,7 +143,8 @@ public class SmppMeterBinder implements MeterBinder {
 
         // Total submit_sm received
         Gauge.builder("smpp.server.submit.total", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .mapToLong(SmppServerSession::getSubmitSmReceived)
@@ -145,7 +156,8 @@ public class SmppMeterBinder implements MeterBinder {
 
         // Total deliver_sm sent
         Gauge.builder("smpp.server.deliver.total", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .mapToLong(SmppServerSession::getDeliverSmSent)
@@ -157,7 +169,8 @@ public class SmppMeterBinder implements MeterBinder {
 
         // Total errors
         Gauge.builder("smpp.server.errors.total", serverSupplier,
-                server -> {
+                supplier -> {
+                    SmppServer server = supplier.get();
                     if (server == null) return 0;
                     return server.getSessions().stream()
                         .mapToLong(SmppServerSession::getErrors)
