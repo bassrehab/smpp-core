@@ -1,12 +1,17 @@
 # SMPP Core
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.smppgateway/smpp-core.svg?label=Maven%20Central&color=blue)](https://central.sonatype.com/artifact/io.smppgateway/smpp-core)
 [![Build Status](https://github.com/bassrehab/smpp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/bassrehab/smpp-core/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/io.smppgateway/smpp-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:io.smppgateway%20AND%20a:smpp-core)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Java](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://openjdk.org/projects/jdk/21/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![javadoc](https://javadoc.io/badge2/io.smppgateway/smpp-core/javadoc.svg)](https://javadoc.io/doc/io.smppgateway/smpp-core)
+[![GitHub stars](https://img.shields.io/github/stars/bassrehab/smpp-core?style=flat&color=yellow)](https://github.com/bassrehab/smpp-core/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/bassrehab/smpp-core)](https://github.com/bassrehab/smpp-core/issues)
+[![Documentation](https://img.shields.io/badge/docs-smppgateway.io-blue)](https://docs.smppgateway.io/smpp-core/1.0/index.html)
 
-Modern Java 21 implementation of the SMPP (Short Message Peer-to-Peer) protocol.
+> **The modern replacement for Cloudhopper** - A clean-room Java 21 implementation of the SMPP protocol.
+
+Modern Java 21 implementation of the SMPP (Short Message Peer-to-Peer) protocol for high-performance SMS messaging.
 
 ## Features
 
@@ -33,8 +38,8 @@ Modern Java 21 implementation of the SMPP (Short Message Peer-to-Peer) protocol.
 ```xml
 <dependency>
     <groupId>io.smppgateway</groupId>
-    <artifactId>smpp-server</artifactId>
-    <version>1.0.0</version>
+    <artifactId>smpp-core</artifactId>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -98,5 +103,7 @@ Apache License 2.0
 ## Links
 
 - [Website](https://smppgateway.io)
-- [Documentation](https://smppgateway.io/docs)
+- [Documentation](https://docs.smppgateway.io/smpp-core/1.0/index.html)
+- [Comparison with Cloudhopper](https://smppgateway.io/comparison.html)
+- [Maven Central](https://central.sonatype.com/artifact/io.smppgateway/smpp-core)
 - [SMPP Specification](https://smpp.org/)
