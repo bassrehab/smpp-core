@@ -135,7 +135,7 @@ public enum CommandStatus {
      * Returns true if this status indicates success.
      */
     public boolean isSuccess() {
-        return this == OK;
+        return this == OK || this == ESME_ROK;
     }
 
     /**

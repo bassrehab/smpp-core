@@ -174,8 +174,8 @@ public class DefaultSmppClient implements SmppClient {
                 config.addressNpi(), config.addressRange(), List.of());
         };
 
-        // Set up response handling
-        channel.pipeline().addFirst("bindHandler", new ChannelInboundHandlerAdapter() {
+        // Set up response handling - add AFTER pduDecoder so we receive decoded PDUs
+        channel.pipeline().addBefore("sessionHandler", "bindHandler", new ChannelInboundHandlerAdapter() {
             @Override
             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                 if (msg instanceof PduResponse resp && resp.sequenceNumber() == seq) {
@@ -210,7 +210,7 @@ public class DefaultSmppClient implements SmppClient {
         connecting.set(false);
         reconnectAttempts.set(0);
 
-        if (response.commandStatus() == CommandStatus.ESME_ROK) {
+        if (response.commandStatus().isSuccess()) {
             String serverSystemId = switch (response) {
                 case BindReceiverResp resp -> resp.systemId();
                 case BindTransmitterResp resp -> resp.systemId();
