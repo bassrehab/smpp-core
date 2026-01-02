@@ -107,4 +107,18 @@ public record RegisteredDelivery(byte value) {
     public static RegisteredDelivery of(byte value) {
         return new RegisteredDelivery(value);
     }
+
+    /**
+     * Creates a RegisteredDelivery from a byte value.
+     */
+    public static RegisteredDelivery fromByte(byte value) {
+        return new RegisteredDelivery(value);
+    }
+
+    /**
+     * Returns the byte value.
+     */
+    public byte toByte() {
+        return value;
+    }
 }

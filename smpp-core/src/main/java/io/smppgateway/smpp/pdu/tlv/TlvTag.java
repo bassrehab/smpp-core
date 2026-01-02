@@ -124,7 +124,13 @@ public enum TlvTag {
 
     // ITS related
     ITS_REPLY_TYPE(0x1380),
-    ITS_SESSION_INFO(0x1383);
+    ITS_SESSION_INFO(0x1383),
+
+    /**
+     * Placeholder for vendor-specific or unknown tags.
+     * Vendor-specific tags are in range 0x1400-0x3FFF.
+     */
+    VENDOR_SPECIFIC(0x0000);
 
     private final short code;
 

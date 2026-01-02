@@ -132,4 +132,14 @@ public enum DataCoding {
         }
         return DEFAULT;
     }
+
+    /**
+     * Alias for fromCode for API compatibility.
+     *
+     * @param value the data coding byte
+     * @return the DataCoding, or DEFAULT if not found
+     */
+    public static DataCoding fromByte(byte value) {
+        return fromCode(value);
+    }
 }

@@ -416,7 +416,8 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
             buf.readBytes(value);
 
             TlvTag tlvTag = TlvTag.fromCode(tag);
-            tlvs.add(new Tlv(tlvTag != null ? tlvTag : TlvTag.VENDOR_SPECIFIC, tag, value));
+            // Use TlvTag constructor if known, otherwise use raw short tag
+            tlvs.add(tlvTag != null ? new Tlv(tlvTag, value) : new Tlv(tag, value));
         }
 
         return tlvs;

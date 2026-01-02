@@ -6,6 +6,8 @@ package io.smppgateway.smpp.types;
 public enum CommandStatus {
     // Success
     OK(0x00000000, "No Error"),
+    /** Alias for OK for backwards compatibility. */
+    ESME_ROK(0x00000000, "No Error"),
 
     // General errors
     ESME_RINVMSGLEN(0x00000001, "Invalid Message Length"),

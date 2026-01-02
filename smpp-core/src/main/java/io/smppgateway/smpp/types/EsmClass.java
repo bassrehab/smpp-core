@@ -115,4 +115,18 @@ public record EsmClass(byte value) {
     public static EsmClass of(byte value) {
         return new EsmClass(value);
     }
+
+    /**
+     * Creates an ESM class from a byte value.
+     */
+    public static EsmClass fromByte(byte value) {
+        return new EsmClass(value);
+    }
+
+    /**
+     * Returns the byte value.
+     */
+    public byte toByte() {
+        return value;
+    }
 }

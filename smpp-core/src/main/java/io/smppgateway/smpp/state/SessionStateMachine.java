@@ -31,6 +31,13 @@ public class SessionStateMachine {
     }
 
     /**
+     * Returns the current session state. Alias for state().
+     */
+    public SessionState getState() {
+        return state;
+    }
+
+    /**
      * Returns true if the session is bound.
      */
     public boolean isBound() {

@@ -47,6 +47,13 @@ public record Tlv(short tag, byte[] value) {
     }
 
     /**
+     * Returns the raw tag value. Alias for tag().
+     */
+    public short rawTag() {
+        return tag;
+    }
+
+    /**
      * Returns a copy of the value bytes.
      */
     @Override

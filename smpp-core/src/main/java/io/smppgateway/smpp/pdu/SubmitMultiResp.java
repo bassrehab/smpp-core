@@ -21,7 +21,14 @@ public record SubmitMultiResp(
     /**
      * Represents a failed delivery to a specific address.
      */
-    public record UnsuccessfulDelivery(Address destAddress, CommandStatus errorStatus) {}
+    public record UnsuccessfulDelivery(Address destAddress, CommandStatus errorStatus) {
+        /**
+         * Returns the destination address. Alias for destAddress().
+         */
+        public Address address() {
+            return destAddress;
+        }
+    }
 
     public SubmitMultiResp {
         unsuccessfulDeliveries = unsuccessfulDeliveries != null ? List.copyOf(unsuccessfulDeliveries) : List.of();
