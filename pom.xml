@@ -65,6 +65,7 @@
         <module>smpp-server</module>
         <module>smpp-client</module>
         <module>smpp-metrics</module>
+        <module>smpp-benchmarks</module>
     </modules>
 
     <properties>

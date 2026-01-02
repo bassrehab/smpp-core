@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Thread-safe sliding window for managing outstanding SMPP requests.
@@ -41,7 +40,6 @@ public class Window<R extends PduResponse> {
     private final int maxSize;
     private final Semaphore permits;
     private final ConcurrentHashMap<Integer, WindowFuture<R>> pending;
-    private final AtomicInteger sequenceNumber;
     private final Duration requestTimeout;
 
     private volatile boolean closed = false;
@@ -56,7 +54,6 @@ public class Window<R extends PduResponse> {
         this.maxSize = maxSize;
         this.permits = new Semaphore(maxSize);
         this.pending = new ConcurrentHashMap<>();
-        this.sequenceNumber = new AtomicInteger(1);
         this.requestTimeout = requestTimeout;
     }
 
@@ -71,7 +68,10 @@ public class Window<R extends PduResponse> {
      * Offers a request to the window, waiting up to the specified timeout
      * for a slot to become available.
      *
-     * @param request The request to send
+     * <p>The request's sequence number is used for correlation with the response.
+     * Ensure the request has a unique sequence number set before calling this method.
+     *
+     * @param request The request to send (must have sequence number set)
      * @param timeout Maximum time to wait for a slot
      * @return A future that will complete when the response arrives
      * @throws TimeoutException If no slot becomes available in time
@@ -91,7 +91,8 @@ public class Window<R extends PduResponse> {
         }
 
         try {
-            int seq = nextSequenceNumber();
+            // Use the PDU's sequence number for correlation
+            int seq = request.sequenceNumber();
             WindowFuture<T> future = new WindowFuture<>(request, seq);
 
             // Store in pending map (we know the cast is safe because we control the types)
@@ -108,6 +109,10 @@ public class Window<R extends PduResponse> {
     /**
      * Offers a request without blocking.
      *
+     * <p>The request's sequence number is used for correlation with the response.
+     * Ensure the request has a unique sequence number set before calling this method.
+     *
+     * @param request The request to send (must have sequence number set)
      * @return The future, or null if the window is full
      */
     @SuppressWarnings("unchecked")
@@ -121,7 +126,8 @@ public class Window<R extends PduResponse> {
         }
 
         try {
-            int seq = nextSequenceNumber();
+            // Use the PDU's sequence number for correlation
+            int seq = request.sequenceNumber();
             WindowFuture<T> future = new WindowFuture<>(request, seq);
             pending.put(seq, (WindowFuture<R>) future);
             log.trace("Offered request to window: seq={} size={}", seq, pending.size());
@@ -292,9 +298,5 @@ public class Window<R extends PduResponse> {
      */
     public Collection<WindowFuture<R>> getPendingFutures() {
         return new ArrayList<>(pending.values());
-    }
-
-    private int nextSequenceNumber() {
-        return sequenceNumber.getAndUpdate(n -> (n >= 0x7FFFFFFF) ? 1 : n + 1);
     }
 }
