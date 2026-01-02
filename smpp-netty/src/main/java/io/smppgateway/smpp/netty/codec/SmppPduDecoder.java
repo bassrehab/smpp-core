@@ -300,9 +300,11 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private Outbind decodeOutbind(ByteBuf buf, int seq, int bodyLen) {
+        int startIdx = buf.readerIndex();
         String systemId = readCString(buf);
         String password = readCString(buf);
-        return new Outbind(seq, systemId, password);
+        List<Tlv> tlvs = readTlvs(buf, bodyLen - (buf.readerIndex() - startIdx));
+        return new Outbind(seq, systemId, password, tlvs);
     }
 
     private AlertNotification decodeAlertNotification(ByteBuf buf, int seq, int bodyLen) {
