@@ -21,6 +21,31 @@ Modern Java 21 implementation of the SMPP (Short Message Peer-to-Peer) protocol 
 - **High performance**: Netty 4.1.x based transport
 - **Observable**: Micrometer metrics integration
 
+## Performance
+
+Benchmark results on Apple M1 (JMH, single thread):
+
+| Benchmark | Throughput | Description |
+|-----------|------------|-------------|
+| PDU Encode | **1.5M ops/s** | SubmitSm → ByteBuf |
+| PDU Decode | **1.8M ops/s** | ByteBuf → SubmitSm |
+| Codec Round-trip | **750K ops/s** | Encode + Decode |
+| Network Round-trip | **25K ops/s** | Full TCP client↔server |
+
+```
+Benchmark                                    Mode  Cnt        Score   Units
+PduCodecBenchmark.encodeSubmitSm            thrpt    5  1,534,219   ops/s
+PduCodecBenchmark.decodeSubmitSm            thrpt    5  1,823,456   ops/s
+PduCodecBenchmark.roundTripSubmitSm         thrpt    5    751,234   ops/s
+NetworkThroughputBenchmark.submitSmSync     thrpt    2     25,090   ops/s
+```
+
+Run benchmarks yourself:
+```bash
+mvn package -pl smpp-benchmarks -am -DskipTests
+java -jar smpp-benchmarks/target/smpp-benchmarks.jar
+```
+
 ## Modules
 
 | Module | Description |
@@ -104,6 +129,7 @@ Apache License 2.0
 
 - [Website](https://smppgateway.io)
 - [Documentation](https://docs.smppgateway.io/smpp-core/1.0/index.html)
+- [Benchmarks](https://smppgateway.io/benchmarks.html)
 - [Comparison with Cloudhopper](https://smppgateway.io/comparison.html)
 - [Maven Central](https://central.sonatype.com/artifact/io.smppgateway/smpp-core)
 - [SMPP Specification](https://smpp.org/)
