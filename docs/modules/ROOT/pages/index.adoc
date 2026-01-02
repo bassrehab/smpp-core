@@ -1,0 +1,110 @@
+= smpp-core Overview
+:navtitle: Overview
+
+smpp-core is a modern Java 21 implementation of the SMPP 3.4 protocol, designed as a clean-room replacement for the abandoned Cloudhopper library.
+
+== Features
+
+* *Java 21 LTS* - Virtual threads, records, sealed classes, pattern matching
+* *Immutable PDUs* - Thread-safe records with fluent builders
+* *Netty Transport* - Zero-copy buffers, efficient memory management
+* *Virtual Thread Handlers* - Business logic runs on lightweight threads
+* *Clean API* - Intuitive builder patterns and CompletableFuture async
+
+== Architecture
+
+[source]
+----
+smpp-core (parent)
+├── smpp-core          # PDUs, codecs, types (zero dependencies)
+├── smpp-netty         # Netty transport layer
+├── smpp-server        # Server with virtual threads
+├── smpp-client        # Client with auto-reconnect
+└── smpp-metrics       # Optional Micrometer integration
+----
+
+== Design Principles
+
+=== Immutable PDUs
+
+All PDUs are immutable records with builders:
+
+[source,java]
+----
+SubmitSm pdu = SubmitSm.builder()
+    .sourceAddress(source)
+    .destAddress(dest)
+    .shortMessage(message)
+    .build();
+
+// PDUs are immutable - create modified copies
+SubmitSm modified = pdu.toBuilder()
+    .shortMessage(newMessage)
+    .build();
+----
+
+=== Sealed Interfaces
+
+PDU types use sealed interfaces for exhaustive pattern matching:
+
+[source,java]
+----
+switch (pdu) {
+    case SubmitSm s -> handleSubmit(s);
+    case DeliverSm d -> handleDeliver(d);
+    case EnquireLink e -> handleEnquireLink(e);
+    // Compiler ensures all cases covered
+}
+----
+
+=== Virtual Threads
+
+Handler callbacks run on virtual threads, allowing blocking operations without blocking platform threads:
+
+[source,java]
+----
+// This blocks a virtual thread, not a platform thread
+SubmitSmResult handleSubmitSm(SmppServerSession session, SubmitSm pdu) {
+    // Safe to do blocking I/O here
+    database.save(pdu);
+    kafka.send(pdu);
+    return SubmitSmResult.success(messageId);
+}
+----
+
+== Comparison with Cloudhopper
+
+[cols="1,1,1"]
+|===
+|Feature |Cloudhopper |smpp-core
+
+|Java Version
+|Java 8
+|Java 21+
+
+|PDUs
+|Mutable classes
+|Immutable records
+
+|Threading
+|Platform threads
+|Virtual threads
+
+|Last Update
+|2015
+|Active
+
+|API Style
+|Setters
+|Fluent builders
+
+|Dependencies
+|Joda Time, etc.
+|Minimal
+|===
+
+== Next Steps
+
+* xref:pdu-types.adoc[PDU Types] - Supported SMPP PDUs
+* xref:server.adoc[Server] - Building an SMPP server
+* xref:client.adoc[Client] - Building an SMPP client

@@ -1,0 +1,199 @@
+= API Reference
+:navtitle: API Reference
+
+== Core Packages
+
+[cols="1,2"]
+|===
+|Package |Description
+
+|`io.smppgateway.smpp.pdu`
+|PDU types (SubmitSm, DeliverSm, etc.)
+
+|`io.smppgateway.smpp.pdu.tlv`
+|TLV optional parameters
+
+|`io.smppgateway.smpp.types`
+|Core types (Address, DataCoding, etc.)
+
+|`io.smppgateway.smpp.codec`
+|Encoding/decoding utilities
+
+|`io.smppgateway.smpp.charset`
+|Character set encoding
+
+|`io.smppgateway.smpp.server`
+|Server implementation
+
+|`io.smppgateway.smpp.client`
+|Client implementation
+|===
+
+== PDU Classes
+
+=== SubmitSm
+
+[source,java]
+----
+SubmitSm pdu = SubmitSm.builder()
+    .serviceType(String)           // Optional service type
+    .sourceAddress(Address)        // Source address
+    .destAddress(Address)          // Destination address
+    .esmClass(EsmClass)            // ESM class flags
+    .protocolId(byte)              // Protocol ID
+    .priorityFlag(byte)            // Priority (0-3)
+    .scheduleDeliveryTime(String)  // Scheduled delivery
+    .validityPeriod(String)        // Validity period
+    .registeredDelivery(RegisteredDelivery) // Delivery receipt
+    .replaceIfPresent(byte)        // Replace flag
+    .dataCoding(DataCoding)        // Data coding scheme
+    .smDefaultMsgId(byte)          // Default message ID
+    .shortMessage(byte[])          // Message content
+    .addTlv(Tlv)                   // Optional TLV parameter
+    .build();
+
+// Accessors
+pdu.sourceAddress();
+pdu.destAddress();
+pdu.shortMessage();
+pdu.dataCoding();
+pdu.registeredDelivery();
+----
+
+=== DeliverSm
+
+[source,java]
+----
+// Typically received, not built manually
+DeliverSm pdu = ...;
+
+pdu.sourceAddress();      // Sender
+pdu.destAddress();        // Recipient
+pdu.shortMessage();       // Message content
+pdu.esmClass();           // Check isDeliveryReceipt()
+pdu.getTlv(TlvTag);       // Get optional parameter
+----
+
+=== Address
+
+[source,java]
+----
+Address addr = new Address(
+    (byte) ton,    // Type of Number
+    (byte) npi,    // Numbering Plan Indicator
+    "12345"        // Address digits
+);
+
+addr.ton();
+addr.npi();
+addr.address();
+----
+
+== Server API
+
+=== SmppServer.Builder
+
+[source,java]
+----
+SmppServer server = SmppServer.builder()
+    .port(int)                    // Server port
+    .systemId(String)             // Server system ID
+    .maxConnections(int)          // Max sessions
+    .windowSize(int)              // Window size
+    .bindTimeout(Duration)        // Bind timeout
+    .requestTimeout(Duration)     // Request timeout
+    .handler(SmppServerHandler)   // Your handler
+    .build();
+----
+
+=== SmppServerHandler
+
+[source,java]
+----
+interface SmppServerHandler {
+    BindResult authenticate(SmppServerSession session,
+                           String systemId,
+                           String password,
+                           PduRequest<?> bindRequest);
+
+    SubmitSmResult handleSubmitSm(SmppServerSession session,
+                                  SubmitSm submitSm);
+
+    default void sessionCreated(SmppServerSession session) {}
+    default void sessionBound(SmppServerSession session) {}
+    default void sessionDestroyed(SmppServerSession session) {}
+}
+----
+
+=== SmppServerSession
+
+[source,java]
+----
+session.getSessionId();           // Session ID
+session.getSystemId();            // Client system ID
+session.getBindType();            // TX, RX, or TRX
+session.isBound();                // Is session bound?
+session.sendDeliverSm(DeliverSm); // Send to client
+session.close();                  // Close session
+----
+
+== Client API
+
+=== SmppClient.Builder
+
+[source,java]
+----
+SmppClient client = SmppClient.builder()
+    .host(String)                 // SMSC host
+    .port(int)                    // SMSC port
+    .systemId(String)             // ESME system ID
+    .password(String)             // Password
+    .systemType(String)           // System type
+    .bindType(SmppBindType)       // TX, RX, TRX
+    .windowSize(int)              // Window size
+    .connectTimeout(Duration)     // Connect timeout
+    .requestTimeout(Duration)     // Request timeout
+    .build();
+----
+
+=== SmppClientSession
+
+[source,java]
+----
+session.isBound();                           // Is bound?
+session.submitSm(SubmitSm, Duration);        // Send SMS
+session.unbind();                            // Graceful unbind
+session.close();                             // Close connection
+----
+
+=== SmppClientHandler
+
+[source,java]
+----
+interface SmppClientHandler {
+    DeliverSmResult handleDeliverSm(SmppClientSession session,
+                                     DeliverSm deliverSm);
+
+    default void sessionBound(SmppClientSession session) {}
+    default void sessionUnbound(SmppClientSession session) {}
+}
+----
+
+== Charset API
+
+[source,java]
+----
+// GSM 7-bit
+byte[] SmppCharset.encodeGsm7(String text);
+String SmppCharset.decodeGsm7(byte[] data);
+boolean SmppCharset.canEncodeGsm7(String text);
+int SmppCharset.countGsm7Septets(String text);
+
+// UCS-2
+byte[] SmppCharset.encodeUcs2(String text);
+String SmppCharset.decodeUcs2(byte[] data);
+
+// Latin-1
+byte[] SmppCharset.encodeLatin1(String text);
+String SmppCharset.decodeLatin1(byte[] data);
+----

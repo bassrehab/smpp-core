@@ -1,0 +1,159 @@
+= Charset Encoding
+:navtitle: Charset Encoding
+
+smpp-core includes `SmppCharset` for encoding SMS messages in GSM 7-bit and UCS-2 formats.
+
+== GSM 7-bit Encoding
+
+The GSM 7-bit default alphabet is the most efficient encoding for SMS, supporting 160 characters per message.
+
+[source,java]
+----
+import io.smppgateway.smpp.charset.SmppCharset;
+
+// Encode to GSM 7-bit
+String message = "Hello World!";
+byte[] encoded = SmppCharset.encodeGsm7(message);
+
+// Decode from GSM 7-bit
+String decoded = SmppCharset.decodeGsm7(encoded);
+----
+
+=== Supported Characters
+
+GSM 7-bit supports:
+
+* Basic Latin letters (A-Z, a-z)
+* Digits (0-9)
+* Common punctuation
+* Some special characters (@, £, $, ¥, etc.)
+* Extended characters via escape sequence (€, [, ], {}, etc.)
+
+=== Check Encodability
+
+[source,java]
+----
+String message = "Hello €100";
+
+if (SmppCharset.canEncodeGsm7(message)) {
+    // Use GSM 7-bit (160 chars per SMS)
+    byte[] encoded = SmppCharset.encodeGsm7(message);
+} else {
+    // Fall back to UCS-2 (70 chars per SMS)
+    byte[] encoded = SmppCharset.encodeUcs2(message);
+}
+----
+
+=== Count Septets
+
+Extended characters (like €) count as 2 septets:
+
+[source,java]
+----
+int septets = SmppCharset.countGsm7Septets("Hello €100");
+// Returns 12 (5 + 1 + 2 + 1 + 1 + 2 = 12, where € counts as 2)
+
+// Check if message fits in single SMS (160 septets)
+if (septets <= 160) {
+    // Single SMS
+} else {
+    // Needs segmentation
+}
+----
+
+== UCS-2 Encoding
+
+UCS-2 (UTF-16BE) supports the full Unicode BMP, but limits messages to 70 characters.
+
+[source,java]
+----
+// Encode to UCS-2
+String message = "Hello 世界!";
+byte[] encoded = SmppCharset.encodeUcs2(message);
+
+// Decode from UCS-2
+String decoded = SmppCharset.decodeUcs2(encoded);
+----
+
+Use UCS-2 for:
+
+* Non-Latin scripts (Chinese, Arabic, Hindi, etc.)
+* Emojis and special symbols
+* Messages that can't be encoded in GSM 7-bit
+
+== Latin-1 Encoding
+
+For Latin-1 (ISO-8859-1) encoded messages:
+
+[source,java]
+----
+byte[] encoded = SmppCharset.encodeLatin1(message);
+String decoded = SmppCharset.decodeLatin1(encoded);
+----
+
+== Data Coding Values
+
+Set the appropriate `DataCoding` value in your PDU:
+
+[source,java]
+----
+import io.smppgateway.smpp.types.DataCoding;
+
+// GSM 7-bit default
+SubmitSm pdu = SubmitSm.builder()
+    .shortMessage(SmppCharset.encodeGsm7(message))
+    .dataCoding(DataCoding.DEFAULT)  // 0x00
+    .build();
+
+// UCS-2
+SubmitSm pdu = SubmitSm.builder()
+    .shortMessage(SmppCharset.encodeUcs2(message))
+    .dataCoding(DataCoding.UCS2)     // 0x08
+    .build();
+----
+
+[cols="1,1,2"]
+|===
+|DataCoding |Value |Description
+
+|`DEFAULT`
+|0x00
+|GSM 7-bit default alphabet
+
+|`IA5`
+|0x01
+|IA5 (CCITT T.50)
+
+|`LATIN1`
+|0x03
+|Latin 1 (ISO-8859-1)
+
+|`UCS2`
+|0x08
+|UCS-2 (UTF-16BE)
+|===
+
+== Example: Auto-detect Encoding
+
+[source,java]
+----
+public SubmitSm createSubmitSm(String message, Address source, Address dest) {
+    byte[] encoded;
+    DataCoding dataCoding;
+
+    if (SmppCharset.canEncodeGsm7(message)) {
+        encoded = SmppCharset.encodeGsm7(message);
+        dataCoding = DataCoding.DEFAULT;
+    } else {
+        encoded = SmppCharset.encodeUcs2(message);
+        dataCoding = DataCoding.UCS2;
+    }
+
+    return SubmitSm.builder()
+        .sourceAddress(source)
+        .destAddress(dest)
+        .shortMessage(encoded)
+        .dataCoding(dataCoding)
+        .build();
+}
+----

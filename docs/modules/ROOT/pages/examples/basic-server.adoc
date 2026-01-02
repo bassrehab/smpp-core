@@ -1,0 +1,147 @@
+= Basic Server Example
+:navtitle: Basic Server
+
+A complete example of an SMPP server that accepts messages and logs them.
+
+== Full Example
+
+[source,java]
+----
+package io.smppgateway.example;
+
+import io.smppgateway.smpp.server.SmppServer;
+import io.smppgateway.smpp.server.SmppServerHandler;
+import io.smppgateway.smpp.server.SmppServerSession;
+import io.smppgateway.smpp.pdu.*;
+import io.smppgateway.smpp.types.CommandStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+public class BasicServer {
+    private static final Logger log = LoggerFactory.getLogger(BasicServer.class);
+
+    public static void main(String[] args) throws Exception {
+        SmppServer server = SmppServer.builder()
+            .port(2775)
+            .systemId("example-smsc")
+            .maxConnections(100)
+            .windowSize(50)
+            .requestTimeout(Duration.ofSeconds(30))
+            .handler(new ExampleHandler())
+            .build();
+
+        server.start();
+        log.info("SMPP Server started on port 2775");
+
+        // Graceful shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Shutting down...");
+            server.stop();
+            server.destroy();
+        }));
+
+        // Keep running
+        Thread.currentThread().join();
+    }
+}
+
+class ExampleHandler implements SmppServerHandler {
+    private static final Logger log = LoggerFactory.getLogger(ExampleHandler.class);
+
+    // Simple credential store
+    private static final ConcurrentHashMap<String, String> credentials = new ConcurrentHashMap<>();
+    static {
+        credentials.put("testuser", "password123");
+        credentials.put("esme1", "secret456");
+    }
+
+    // Message ID generator
+    private final AtomicLong messageIdCounter = new AtomicLong(1);
+
+    @Override
+    public BindResult authenticate(SmppServerSession session,
+                                   String systemId,
+                                   String password,
+                                   PduRequest<?> bindRequest) {
+        log.info("Bind request from {} (system_id: {})",
+            session.getRemoteAddress(), systemId);
+
+        String expectedPassword = credentials.get(systemId);
+
+        if (expectedPassword == null) {
+            log.warn("Unknown system_id: {}", systemId);
+            return BindResult.failure(CommandStatus.ESME_RINVSYSID);
+        }
+
+        if (!expectedPassword.equals(password)) {
+            log.warn("Invalid password for system_id: {}", systemId);
+            return BindResult.failure(CommandStatus.ESME_RINVPASWD);
+        }
+
+        log.info("Authentication successful for: {}", systemId);
+        return BindResult.success();
+    }
+
+    @Override
+    public SubmitSmResult handleSubmitSm(SmppServerSession session,
+                                          SubmitSm submitSm) {
+        String messageId = String.format("%016X", messageIdCounter.getAndIncrement());
+
+        log.info("SubmitSm received:");
+        log.info("  From: {}", submitSm.sourceAddress().address());
+        log.info("  To: {}", submitSm.destAddress().address());
+        log.info("  Message: {}", new String(submitSm.shortMessage()));
+        log.info("  Message ID: {}", messageId);
+
+        return SubmitSmResult.success(messageId);
+    }
+
+    @Override
+    public void sessionCreated(SmppServerSession session) {
+        log.info("Session created: {} from {}",
+            session.getSessionId(), session.getRemoteAddress());
+    }
+
+    @Override
+    public void sessionBound(SmppServerSession session) {
+        log.info("Session bound: {} as {} ({})",
+            session.getSessionId(),
+            session.getSystemId(),
+            session.getBindType());
+    }
+
+    @Override
+    public void sessionDestroyed(SmppServerSession session) {
+        log.info("Session destroyed: {}", session.getSessionId());
+    }
+}
+----
+
+== Running
+
+[source,bash]
+----
+# Compile
+javac -cp smpp-server-1.0.2.jar BasicServer.java
+
+# Run
+java -cp .:smpp-server-1.0.2.jar io.smppgateway.example.BasicServer
+----
+
+== Testing
+
+Use an SMPP client to connect:
+
+[source,bash]
+----
+# Using smpp-client
+java -jar smpp-client.jar \
+    --host localhost \
+    --port 2775 \
+    --system-id testuser \
+    --password password123
+----

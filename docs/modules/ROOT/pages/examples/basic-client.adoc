@@ -1,0 +1,171 @@
+= Basic Client Example
+:navtitle: Basic Client
+
+A complete example of an SMPP client that sends messages and handles delivery receipts.
+
+== Full Example
+
+[source,java]
+----
+package io.smppgateway.example;
+
+import io.smppgateway.smpp.client.SmppClient;
+import io.smppgateway.smpp.client.SmppClientHandler;
+import io.smppgateway.smpp.client.SmppClientSession;
+import io.smppgateway.smpp.pdu.*;
+import io.smppgateway.smpp.types.*;
+import io.smppgateway.smpp.charset.SmppCharset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class BasicClient {
+    private static final Logger log = LoggerFactory.getLogger(BasicClient.class);
+
+    public static void main(String[] args) throws Exception {
+        // Build client
+        SmppClient client = SmppClient.builder()
+            .host("localhost")
+            .port(2775)
+            .systemId("testuser")
+            .password("password123")
+            .bindType(SmppBindType.TRANSCEIVER)
+            .windowSize(10)
+            .connectTimeout(Duration.ofSeconds(10))
+            .requestTimeout(Duration.ofSeconds(30))
+            .build();
+
+        // Connect with handler
+        MessageHandler handler = new MessageHandler();
+        SmppClientSession session = client.connect(handler);
+
+        log.info("Connected to SMSC as transceiver");
+
+        // Send some messages
+        for (int i = 1; i <= 5; i++) {
+            sendMessage(session, "+12025551234", "+12025555678",
+                "Test message #" + i, handler);
+            Thread.sleep(1000);
+        }
+
+        // Wait for delivery receipts
+        log.info("Waiting for delivery receipts...");
+        Thread.sleep(10000);
+
+        // Cleanup
+        session.unbind();
+        session.close();
+        log.info("Disconnected");
+    }
+
+    private static void sendMessage(SmppClientSession session,
+                                    String from, String to, String text,
+                                    MessageHandler handler) {
+        try {
+            // Determine encoding
+            byte[] messageBytes;
+            DataCoding dataCoding;
+
+            if (SmppCharset.canEncodeGsm7(text)) {
+                messageBytes = SmppCharset.encodeGsm7(text);
+                dataCoding = DataCoding.DEFAULT;
+            } else {
+                messageBytes = SmppCharset.encodeUcs2(text);
+                dataCoding = DataCoding.UCS2;
+            }
+
+            // Build PDU
+            SubmitSm submitSm = SubmitSm.builder()
+                .sourceAddress(new Address((byte) 1, (byte) 1, from))
+                .destAddress(new Address((byte) 1, (byte) 1, to))
+                .shortMessage(messageBytes)
+                .dataCoding(dataCoding)
+                .registeredDelivery(RegisteredDelivery.SMSC_DELIVERY_RECEIPT_REQUESTED)
+                .build();
+
+            // Send
+            SubmitSmResp response = session.submitSm(submitSm, Duration.ofSeconds(5));
+
+            if (response.commandStatus().isSuccess()) {
+                log.info("Message sent! ID: {}", response.messageId());
+                handler.trackMessage(response.messageId(), to, text);
+            } else {
+                log.error("Failed to send: {}", response.commandStatus());
+            }
+
+        } catch (Exception e) {
+            log.error("Error sending message", e);
+        }
+    }
+}
+
+class MessageHandler implements SmppClientHandler {
+    private static final Logger log = LoggerFactory.getLogger(MessageHandler.class);
+
+    // Track pending messages
+    private final ConcurrentHashMap<String, PendingMessage> pending = new ConcurrentHashMap<>();
+
+    public void trackMessage(String messageId, String destination, String text) {
+        pending.put(messageId, new PendingMessage(destination, text, System.currentTimeMillis()));
+    }
+
+    @Override
+    public DeliverSmResult handleDeliverSm(SmppClientSession session, DeliverSm deliverSm) {
+        if (deliverSm.esmClass().isDeliveryReceipt()) {
+            handleDeliveryReceipt(deliverSm);
+        } else {
+            handleMobileOriginated(deliverSm);
+        }
+        return DeliverSmResult.success();
+    }
+
+    private void handleDeliveryReceipt(DeliverSm deliverSm) {
+        String messageId = extractMessageId(deliverSm);
+        String status = extractStatus(deliverSm);
+
+        PendingMessage msg = pending.remove(messageId);
+        if (msg != null) {
+            long latency = System.currentTimeMillis() - msg.sentAt;
+            log.info("Delivery receipt: ID={}, status={}, latency={}ms",
+                messageId, status, latency);
+        }
+    }
+
+    private void handleMobileOriginated(DeliverSm deliverSm) {
+        String from = deliverSm.sourceAddress().address();
+        String message = new String(deliverSm.shortMessage());
+        log.info("MO message from {}: {}", from, message);
+    }
+
+    @Override
+    public void sessionBound(SmppClientSession session) {
+        log.info("Session bound to SMSC");
+    }
+
+    @Override
+    public void sessionUnbound(SmppClientSession session) {
+        log.info("Session unbound from SMSC");
+    }
+
+    record PendingMessage(String destination, String text, long sentAt) {}
+}
+----
+
+== Expected Output
+
+[source]
+----
+Connected to SMSC as transceiver
+Message sent! ID: 0000000000000001
+Message sent! ID: 0000000000000002
+Message sent! ID: 0000000000000003
+Message sent! ID: 0000000000000004
+Message sent! ID: 0000000000000005
+Waiting for delivery receipts...
+Delivery receipt: ID=0000000000000001, status=2, latency=1523ms
+Delivery receipt: ID=0000000000000002, status=2, latency=1456ms
+...
+Disconnected
+----

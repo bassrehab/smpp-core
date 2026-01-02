@@ -1,0 +1,191 @@
+= SMPP Client
+:navtitle: Client
+
+The smpp-core client provides connection management, request windowing, and session handling.
+
+== Basic Client
+
+[source,java]
+----
+SmppClient client = SmppClient.builder()
+    .host("localhost")
+    .port(2775)
+    .systemId("myesme")
+    .password("secret")
+    .bindType(SmppBindType.TRANSCEIVER)
+    .build();
+
+SmppClientSession session = client.connect();
+----
+
+== Configuration Options
+
+[source,java]
+----
+SmppClient client = SmppClient.builder()
+    .host("smsc.example.com")              // SMSC host
+    .port(2775)                            // SMSC port
+    .systemId("myesme")                    // ESME system ID
+    .password("secret")                    // Password
+    .systemType("SMS")                     // System type
+    .bindType(SmppBindType.TRANSCEIVER)    // Bind mode
+    .windowSize(50)                        // Request window
+    .connectTimeout(Duration.ofSeconds(10))// Connection timeout
+    .requestTimeout(Duration.ofSeconds(30))// Request timeout
+    .build();
+----
+
+[cols="1,1,2"]
+|===
+|Option |Default |Description
+
+|`host`
+|required
+|SMSC hostname
+
+|`port`
+|2775
+|SMSC port
+
+|`systemId`
+|required
+|ESME identification
+
+|`password`
+|""
+|ESME password
+
+|`bindType`
+|TRANSCEIVER
+|TX, RX, or TRX
+
+|`windowSize`
+|10
+|Outstanding requests
+
+|`connectTimeout`
+|10s
+|Connection timeout
+
+|`requestTimeout`
+|30s
+|Request timeout
+|===
+
+== Bind Types
+
+[source,java]
+----
+// Transmitter - send only
+SmppClient txClient = SmppClient.builder()
+    .bindType(SmppBindType.TRANSMITTER)
+    // ...
+    .build();
+
+// Receiver - receive only
+SmppClient rxClient = SmppClient.builder()
+    .bindType(SmppBindType.RECEIVER)
+    // ...
+    .build();
+
+// Transceiver - send and receive
+SmppClient trxClient = SmppClient.builder()
+    .bindType(SmppBindType.TRANSCEIVER)
+    // ...
+    .build();
+----
+
+== Sending Messages
+
+[source,java]
+----
+SmppClientSession session = client.connect();
+
+// Build the message
+SubmitSm submitSm = SubmitSm.builder()
+    .sourceAddress(new Address((byte) 1, (byte) 1, "12345"))
+    .destAddress(new Address((byte) 1, (byte) 1, "67890"))
+    .shortMessage("Hello!".getBytes())
+    .dataCoding(DataCoding.DEFAULT)
+    .registeredDelivery(RegisteredDelivery.SMSC_DELIVERY_RECEIPT_REQUESTED)
+    .build();
+
+// Send with timeout
+SubmitSmResp response = session.submitSm(submitSm, Duration.ofSeconds(5));
+
+if (response.commandStatus().isSuccess()) {
+    System.out.println("Message ID: " + response.messageId());
+}
+----
+
+== Client Handler
+
+Handle incoming messages (for receiver/transceiver):
+
+[source,java]
+----
+SmppClientSession session = client.connect(new SmppClientHandler() {
+    @Override
+    public DeliverSmResult handleDeliverSm(SmppClientSession session,
+                                            DeliverSm deliverSm) {
+        if (deliverSm.esmClass().isDeliveryReceipt()) {
+            // Handle delivery receipt
+            log.info("Delivery receipt for: {}", extractMessageId(deliverSm));
+        } else {
+            // Handle mobile-originated message
+            log.info("MO message: {}", new String(deliverSm.shortMessage()));
+        }
+        return DeliverSmResult.success();
+    }
+
+    @Override
+    public void sessionBound(SmppClientSession session) {
+        log.info("Session bound to SMSC");
+    }
+
+    @Override
+    public void sessionUnbound(SmppClientSession session) {
+        log.info("Session unbound from SMSC");
+    }
+});
+----
+
+== Session Lifecycle
+
+[source,java]
+----
+// Connect and bind
+SmppClientSession session = client.connect();
+
+// Check status
+if (session.isBound()) {
+    // Send messages
+}
+
+// Graceful unbind
+session.unbind();
+
+// Close connection
+session.close();
+----
+
+== Error Handling
+
+[source,java]
+----
+try {
+    SubmitSmResp response = session.submitSm(submitSm, Duration.ofSeconds(5));
+
+    if (!response.commandStatus().isSuccess()) {
+        switch (response.commandStatus()) {
+            case ESME_RTHROTTLED -> handleThrottling();
+            case ESME_RINVDSTADR -> handleInvalidDestination();
+            default -> handleError(response.commandStatus());
+        }
+    }
+} catch (TimeoutException e) {
+    log.warn("Request timed out");
+} catch (SmppException e) {
+    log.error("SMPP error", e);
+}
+----

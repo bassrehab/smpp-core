@@ -1,0 +1,6 @@
+name: smpp-core
+title: smpp-core
+version: '1.0'
+start_page: index.adoc
+nav:
+  - modules/ROOT/nav.adoc

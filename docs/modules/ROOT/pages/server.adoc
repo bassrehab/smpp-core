@@ -1,0 +1,155 @@
+= SMPP Server
+:navtitle: Server
+
+The smpp-core server provides a high-performance SMPP server implementation with virtual threads.
+
+== Basic Server
+
+[source,java]
+----
+SmppServer server = SmppServer.builder()
+    .port(2775)
+    .systemId("mysmsc")
+    .handler(new MyHandler())
+    .build();
+
+server.start();
+----
+
+== Configuration Options
+
+[source,java]
+----
+SmppServer server = SmppServer.builder()
+    .port(2775)                              // SMPP port
+    .systemId("mysmsc")                      // Server system ID
+    .maxConnections(1000)                    // Max concurrent sessions
+    .windowSize(100)                         // Request window size
+    .requestTimeout(Duration.ofSeconds(30))  // Request timeout
+    .bindTimeout(Duration.ofSeconds(5))      // Bind timeout
+    .handler(myHandler)                      // Your handler
+    .build();
+----
+
+[cols="1,1,2"]
+|===
+|Option |Default |Description
+
+|`port`
+|2775
+|SMPP server port
+
+|`systemId`
+|"smppserver"
+|Server identification
+
+|`maxConnections`
+|100
+|Maximum concurrent sessions
+
+|`windowSize`
+|50
+|Outstanding request window
+
+|`requestTimeout`
+|30s
+|Request timeout
+
+|`bindTimeout`
+|5s
+|Bind request timeout
+|===
+
+== Server Handler
+
+Implement `SmppServerHandler` to handle SMPP events:
+
+[source,java]
+----
+public class MyHandler implements SmppServerHandler {
+
+    @Override
+    public BindResult authenticate(SmppServerSession session,
+                                   String systemId,
+                                   String password,
+                                   PduRequest<?> bindRequest) {
+        // Validate credentials
+        if (isValid(systemId, password)) {
+            return BindResult.success();
+        }
+        return BindResult.failure(CommandStatus.ESME_RINVPASWD);
+    }
+
+    @Override
+    public SubmitSmResult handleSubmitSm(SmppServerSession session,
+                                          SubmitSm submitSm) {
+        // Process the message
+        String messageId = processMessage(submitSm);
+        return SubmitSmResult.success(messageId);
+    }
+
+    @Override
+    public void sessionCreated(SmppServerSession session) {
+        log.info("Session created: {}", session.getSessionId());
+    }
+
+    @Override
+    public void sessionBound(SmppServerSession session) {
+        log.info("Session bound: {} as {}",
+            session.getSessionId(), session.getSystemId());
+    }
+
+    @Override
+    public void sessionDestroyed(SmppServerSession session) {
+        log.info("Session destroyed: {}", session.getSessionId());
+    }
+}
+----
+
+== Sending Delivery Receipts
+
+Send delivery receipts back to the ESME:
+
+[source,java]
+----
+public SubmitSmResult handleSubmitSm(SmppServerSession session, SubmitSm submitSm) {
+    String messageId = generateMessageId();
+
+    // Check if delivery receipt requested
+    if (submitSm.registeredDelivery().value() > 0) {
+        // Schedule delivery receipt
+        scheduler.schedule(() -> {
+            DeliverSm receipt = createDeliveryReceipt(messageId, submitSm);
+            session.sendDeliverSm(receipt);
+        }, 5, TimeUnit.SECONDS);
+    }
+
+    return SubmitSmResult.success(messageId);
+}
+----
+
+== Server Lifecycle
+
+[source,java]
+----
+SmppServer server = SmppServer.builder()
+    .port(2775)
+    .handler(handler)
+    .build();
+
+// Start the server
+server.start();
+
+// Graceful shutdown
+Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+    server.stop();       // Stop accepting new connections
+    server.destroy();    // Close all sessions
+}));
+----
+
+== Thread Model
+
+* *Netty Event Loops*: Platform threads handle I/O
+* *Handler Callbacks*: Virtual threads handle business logic
+
+This means your handler methods can safely perform blocking operations (database calls, HTTP requests, etc.) without blocking the I/O threads.
