@@ -23,7 +23,7 @@ Modern Java 21 implementation of the SMPP (Short Message Peer-to-Peer) protocol 
 
 ## Performance
 
-Benchmark results on Apple M1 (JMH, single thread):
+Benchmark results on Apple M4 (JMH, single thread):
 
 | Benchmark | Throughput | Description |
 |-----------|------------|-------------|
