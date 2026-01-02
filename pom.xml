@@ -48,7 +48,7 @@
         <!-- Dependency versions -->
         <netty.version>4.1.115.Final</netty.version>
         <slf4j.version>2.0.16</slf4j.version>
-        <log4j.version>2.24.3</log4j.version>
+        <log4j.version>2.25.3</log4j.version>
         <micrometer.version>1.14.2</micrometer.version>
         <junit.version>5.11.4</junit.version>
         <assertj.version>3.26.3</assertj.version>
