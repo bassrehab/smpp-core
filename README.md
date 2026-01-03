@@ -1,4 +1,4 @@
-# SMPP Core
+# SMPP Gateway
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.smppgateway/smpp-core.svg?label=Maven%20Central&color=blue)](https://central.sonatype.com/artifact/io.smppgateway/smpp-core)
 [![Build Status](https://github.com/bassrehab/smpp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/bassrehab/smpp-core/actions/workflows/ci.yml)
