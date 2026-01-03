@@ -64,7 +64,7 @@ java -jar smpp-benchmarks/target/smpp-benchmarks.jar
 <dependency>
     <groupId>io.smppgateway</groupId>
     <artifactId>smpp-core</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 ```
 

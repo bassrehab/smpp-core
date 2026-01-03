@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.smppgateway</groupId>
         <artifactId>smpp-parent</artifactId>
-        <version>1.0.7</version>
+        <version>1.0.8</version>
     </parent>
 
     <artifactId>smpp-benchmarks</artifactId>
@@ -127,14 +127,7 @@
             <id>release</id>
             <build>
                 <plugins>
-                    <!-- Skip all release plugins for benchmarks module -->
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <configuration>
-                            <skipPublishing>true</skipPublishing>
-                        </configuration>
-                    </plugin>
+                    <!-- Skip GPG signing for benchmarks module (excluded from publishing via parent pom) -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
