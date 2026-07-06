@@ -222,7 +222,7 @@ public class SmppMetrics {
      * Records an error response.
      */
     public void recordError(CommandStatus status) {
-        if (status != CommandStatus.ESME_ROK) {
+        if (!status.isSuccess()) {
             errorCounters.computeIfAbsent(status, s ->
                 Counter.builder(prefix + ".errors")
                     .tag("status", s.name().toLowerCase())

@@ -94,7 +94,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private BindReceiverResp decodeBindReceiverResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new BindReceiverResp(seq, status, "", List.of());
         }
         int startIdx = buf.readerIndex();
@@ -120,7 +120,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private BindTransmitterResp decodeBindTransmitterResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new BindTransmitterResp(seq, status, "", List.of());
         }
         int startIdx = buf.readerIndex();
@@ -146,7 +146,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private BindTransceiverResp decodeBindTransceiverResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new BindTransceiverResp(seq, status, "", List.of());
         }
         int startIdx = buf.readerIndex();
@@ -183,7 +183,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private SubmitSmResp decodeSubmitSmResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new SubmitSmResp(seq, status, "", List.of());
         }
         int startIdx = buf.readerIndex();
@@ -238,7 +238,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private QuerySmResp decodeQuerySmResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new QuerySmResp(seq, status, "", "", (byte) 0, (byte) 0, List.of());
         }
         int startIdx = buf.readerIndex();
@@ -290,7 +290,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private DataSmResp decodeDataSmResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new DataSmResp(seq, status, "", List.of());
         }
         int startIdx = buf.readerIndex();
@@ -356,7 +356,7 @@ public class SmppPduDecoder extends MessageToMessageDecoder<ByteBuf> {
     }
 
     private SubmitMultiResp decodeSubmitMultiResp(ByteBuf buf, int seq, CommandStatus status, int bodyLen) {
-        if (bodyLen == 0 || status != CommandStatus.ESME_ROK) {
+        if (bodyLen == 0 || !status.isSuccess()) {
             return new SubmitMultiResp(seq, status, "", List.of(), List.of());
         }
         int startIdx = buf.readerIndex();

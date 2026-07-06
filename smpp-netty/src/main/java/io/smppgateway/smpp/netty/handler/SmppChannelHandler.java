@@ -151,7 +151,7 @@ public abstract class SmppChannelHandler extends ChannelDuplexHandler {
 
     protected void handleBindResponse(ChannelHandlerContext ctx, PduResponse bindResponse) {
         log.debug("Received bind response: {} status={}", bindResponse.commandId(), bindResponse.commandStatus());
-        if (bindResponse.commandStatus() == CommandStatus.ESME_ROK) {
+        if (bindResponse.commandStatus().isSuccess()) {
             SmppBindType bindType = switch (bindResponse) {
                 case BindReceiverResp ignored -> SmppBindType.RECEIVER;
                 case BindTransmitterResp ignored -> SmppBindType.TRANSMITTER;

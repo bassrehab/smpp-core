@@ -70,8 +70,6 @@ class PduCodecRoundTripTest {
     @Test
     @DisplayName("should encode and decode SubmitSmResp round-trip with error status")
     void shouldEncodeAndDecodeSubmitSmRespRoundTripWithError() {
-        // Test with error status since success status decoding has a known issue
-        // (decoder compares to ESME_ROK but fromCode returns OK)
         SubmitSmResp original = new SubmitSmResp(12345, CommandStatus.ESME_RTHROTTLED, null, List.of());
 
         SubmitSmResp decoded = encodeAndDecode(original);
@@ -81,9 +79,11 @@ class PduCodecRoundTripTest {
     }
 
     @Test
-    @DisplayName("should encode and decode SubmitSmResp command structure")
-    void shouldEncodeAndDecodeSubmitSmRespCommandStructure() {
-        // Basic structure test - status and sequence preserved
+    @DisplayName("should preserve message_id when decoding successful SubmitSmResp")
+    void shouldPreserveMessageIdOnSuccessfulSubmitSmResp() {
+        // Regression test for issue #4: OK and ESME_ROK share code 0, and the
+        // decoder's identity comparison against ESME_ROK skipped the body of
+        // every successful response, dropping the message_id.
         SubmitSmResp original = new SubmitSmResp(12345, CommandStatus.OK, "MSG123", List.of());
 
         SubmitSmResp decoded = encodeAndDecode(original);
@@ -91,6 +91,18 @@ class PduCodecRoundTripTest {
         assertThat(decoded.sequenceNumber()).isEqualTo(12345);
         assertThat(decoded.commandId()).isEqualTo(CommandId.SUBMIT_SM_RESP);
         assertThat(decoded.commandStatus().isSuccess()).isTrue();
+        assertThat(decoded.messageId()).isEqualTo("MSG123");
+    }
+
+    @Test
+    @DisplayName("should preserve message_id when status is wire-decoded ESME_ROK")
+    void shouldPreserveMessageIdWithEsmeRokStatus() {
+        SubmitSmResp original = new SubmitSmResp(54321, CommandStatus.ESME_ROK, "ID-9", List.of());
+
+        SubmitSmResp decoded = encodeAndDecode(original);
+
+        assertThat(decoded.commandStatus().isSuccess()).isTrue();
+        assertThat(decoded.messageId()).isEqualTo("ID-9");
     }
 
     @Test

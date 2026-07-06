@@ -162,7 +162,7 @@ public interface SmppServerHandler {
         }
 
         public boolean isSuccess() {
-            return status == CommandStatus.ESME_ROK;
+            return status.isSuccess();
         }
     }
 
@@ -179,7 +179,7 @@ public interface SmppServerHandler {
         }
 
         public boolean isSuccess() {
-            return status == CommandStatus.ESME_ROK;
+            return status.isSuccess();
         }
     }
 
@@ -196,7 +196,7 @@ public interface SmppServerHandler {
         }
 
         public boolean isSuccess() {
-            return status == CommandStatus.ESME_ROK;
+            return status.isSuccess();
         }
     }
 
@@ -216,7 +216,7 @@ public interface SmppServerHandler {
         }
 
         public boolean isSuccess() {
-            return status == CommandStatus.ESME_ROK;
+            return status.isSuccess();
         }
     }
 
@@ -239,7 +239,7 @@ public interface SmppServerHandler {
         }
 
         public boolean isSuccess() {
-            return status == CommandStatus.ESME_ROK;
+            return status.isSuccess();
         }
     }
 }

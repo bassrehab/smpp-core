@@ -4,7 +4,9 @@ package io.smppgateway.smpp.types;
  * SMPP command status codes as defined in SMPP 3.4 and 5.0 specifications.
  */
 public enum CommandStatus {
-    // Success
+    // Success. OK and ESME_ROK share code 0x00000000, and fromCode(0) always
+    // returns OK - so never test for success with identity comparison against
+    // either constant; use isSuccess() instead.
     OK(0x00000000, "No Error"),
     /** Alias for OK for backwards compatibility. */
     ESME_ROK(0x00000000, "No Error"),
